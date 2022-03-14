@@ -1,0 +1,23 @@
+
+.metricsListBody {
+  position: absolute;
+  top: 0px;
+  bottom: 0px;
+  left: 0px;
+  right: 0px;
+  border: solid 0px blue;
+  overflow: scroll;
+  z-index: 10;
+}
+
+.actorMetricsList {
+  display: table;
+  width: 100%;
+}
+
+.metricsListRow {
+  position: relative;
+  border: solid 1px red;
+  height: 150px;
+}
+

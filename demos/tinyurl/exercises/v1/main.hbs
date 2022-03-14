@@ -1,0 +1,74 @@
+<Exercise id = "basicV1" class = "exerciseContainerDiv">
+  <!-- The network we want to model. -->
+  {{> include "demos/tinyurl/exercises/v1/system.xml" }}
+
+  <!-- How do we want our system to look like. -->
+  <Scene> {{> include "demos/tinyurl/exercises/v1/layout.svg" }} </Scene>
+
+  <!--
+  Which properties we want to allow to be selected.
+  When an element on the svg tree is clicked/selected the clicked 
+  it typically corresponds to a single Actor (or a system).
+  Our system is a hierarchical collection of components so clicking
+  on a say a top level System will only get us the its immediate
+  properties.   If we want to model a system where the properties
+  of its children are also important then we have to show *all* the
+  children's properties which is pretty messy.
+
+  The other side of the problem is that for different exercises
+  we only want *some* properties to be configurable - ie those
+  pertinent to the exercise so it doesnt clutter the user's 
+  experience.   
+
+  So an easier way to model is by simply taking the approach we 
+  took with the Scene and just create property groups and associate
+  them with actor Paths which will be shown when selected.
+  -->
+  <Properties>
+    <div class = "propertyGroup">
+      <h2>Client</h2>
+      <Property
+        path = "Client.defaultTimeout"
+        value = "1s"
+        disabled = "true"
+        label = "Timeout"></Property>
+      <Property
+        path = "Client.Gen.targetQPS"
+        value = "350"
+        max = "500"
+        label = "QPS"></Property>
+    </div>
+    <div class = "propertyGroup">
+      <h2>DB</h2>
+      <Property
+        handler = "updateDiskAccessTime"
+        disabled = "true"
+        value = "1ms" min = "1ms" max = "1s"
+        label = "Disk Access Time"></Property>
+      <Property
+        path = "TinyURL.TUDB.maxServers"
+        disabled = "true"
+        label = "Max Concurrency"></Property>
+    </div>
+  </Properties>
+
+  <!-- Which graphs in our network we want showing. -->
+  <MetricDashboard>
+    <Count name = "readQPS"
+            label = "Read QPS"></Count>
+    <Count name = "writeQPS"
+            label = "Write QPS"></Count>
+    <Latency name = "readLatencies" pct = "0.95"
+            label = "Read P95 Latencies"></Latency>
+    <Latency name = "writeLatencies" pct = "0.95"
+            label = "Write P95 Latencies"></Latency>
+    <Count name = "readTimeouts"
+            label = "Read Timeouts"></Count>
+    <Count name = "writeTimeouts"
+            label = "Write Timeouts"></Count>
+    <Latency name = "dbGetLatencies" pct = "0.95"
+            label = "DB Get P95 Latencies"></Latency>
+    <Latency name = "dbPutLatencies" pct = "0.95"
+            label = "DB Put P95 Latencies"></Latency>
+  </MetricDashboard>
+</Exercise>

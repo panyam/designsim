@@ -1,0 +1,46 @@
+@import "../../global/styles/common";
+
+$footer_height: 30px;
+
+#systemAreaDiv {
+  position: absolute;
+  border: solid 10px gray;
+  left: 0px;
+  right: 0px;
+  top: 0px;
+  overflow: scroll;
+}
+
+#systemDesignView {
+  position: absolute;
+  left: 0px;
+  right: 0px;
+  top: 0px;
+  bottom: $footer_height;
+  overflow: scroll;
+  border: solid 0px red;
+}
+
+#systemFooterArea {
+  position: absolute;
+  bottom: 0px;
+  left: 0px;
+  right: 0px;
+  height: $footer_height;
+  border-top: solid 2px blue;
+  padding-top: 5px;
+  padding-bottom: 5px;
+  text-align: center;
+}
+
+.systemRootSVG {
+  position: absolute;
+  left: 0px;
+  right: 0px;
+  width: 100%;
+  height: 100%;
+  // top: 0px; bottom: 0px;
+  padding: 5px;
+  border: solid 0px red;
+  overflow: scroll;
+}

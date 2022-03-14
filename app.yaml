@@ -1,0 +1,15 @@
+runtime: nodejs12
+
+handlers:
+  - url: /
+    static_files: dist/demos/index.html
+    upload: dist/demos/index.html
+
+  - url: /(.*)
+    static_files: dist/\1
+    upload: dist/(.*)
+
+  - url: /demos/simple
+    static_files: dist/demos/simple/index.html
+    upload: dist/demos/simple/index.html
+

@@ -1,0 +1,18 @@
+<svg viewBox="0 0 500 500" xmlns="http://www.w3.org/2000/svg" xmlns:bx="https://boxy-svg.com">
+  <g transform="matrix(1, 0, 0, 1, 141.761398, -60.626213)" actorPath = "Client">
+    <rect x="53.313" y="133.865" width="95.925" height="43.449" style="fill: rgb(216, 216, 216);"></rect>
+    <text x="63.04" y="165.897" style="white-space: pre; fill: rgb(51, 51, 51); font-family: &quot;Roboto Slab&quot;; font-size: 28px;">Client</text>
+  </g>
+  <g transform="matrix(1, 0, 0, 1, -45.316235, 66.128563)" actorPath = "TinyURL.TUWeb">
+    <rect x="233.301" y="118.371" width="113.251" height="75.551" style="fill: rgb(120, 240, 240);"></rect>
+    <text x="246.756" y="148.811" style="white-space: pre; fill: rgb(51, 51, 51); font-family: &quot;Roboto Slab&quot;; font-size: 28px;" transform="matrix(0.700215, 0, 0, 0.713675, 78.813873, 46.403187)">TinyURL<tspan x="246.75599670410156" dy="1em">​</tspan>WebApp</text>
+  </g>
+  <g transform="matrix(1, 0, 0, 1, 6.580421, 25.590857)" actorPath = "TinyURL.TUDB">
+    <rect x="187.549" y="315.153" width="105.459" height="71.209" style="fill: rgb(216, 216, 216); stroke: rgb(0, 0, 0);"></rect>
+    <ellipse style="fill: rgb(216, 216, 216); stroke: rgb(0, 0, 0);" cx="240.032" cy="388.301" rx="53.079" ry="10.901"></ellipse>
+    <ellipse style="fill: rgb(216, 216, 216); stroke: rgb(0, 0, 0);" cx="240.331" cy="315.098" rx="53.079" ry="10.901"></ellipse>
+    <text x="200.166" y="335.954" style="white-space: pre; fill: rgb(51, 51, 51); font-family: &quot;Roboto Slab&quot;; font-size: 28px; text-anchor: middle;" transform="matrix(0.694421, 0, 0, 0.666645, 102.171371, 126.188362)">TinyURL<tspan x="200.16600036621094" dy="1em">​</tspan>DB</text>
+  </g>
+  <path d="M 240.318 124.387 H 277.703 L 254.64 107.649 L 294.64 127.649 L 254.64 147.649 L 277.703 130.91 H 240.318 V 124.387 Z" style="fill: rgb(116, 106, 205);" transform="matrix(-0.003952, 0.999992, -0.999992, -0.003952, 368.915619, -114.163528)" bx:shape="arrow 240.318 107.649 54.322 40 6.523 40 23.063 1@6893dd1c"></path>
+  <path d="M 240.318 124.387 H 277.703 L 254.64 107.649 L 294.64 127.649 L 254.64 147.649 L 277.703 130.91 H 240.318 V 124.387 Z" style="fill: rgb(116, 106, 205);" transform="matrix(-0.003952, 0.999992, -0.999992, -0.003952, 372.904022, 28.467505)"></path>
+</svg>

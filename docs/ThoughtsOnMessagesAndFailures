@@ -1,0 +1,24 @@
+
+Currently we model a Message as:
+
+```
+union ( Interrupt | Send | Reply )
+```
+
+While "everything" as a message is convinient it has some problems:
+
+1. An interrupt technically is not a message - it just a reminder (from "god") that an actor is given a chance to do some work.  It is very very specific, it cannot be forwarded, it cannot be replied and it can be dropped without concequences (ie no metrics impact).  Also interrupts dont carry any payloads (no?).
+
+
+2. Having Sends and Replies as different concepts for denoting bidirectionality in intents (as opposed to just a Message which is one way) modelling errors becomes hard.  ie currently errors have to be modelled as a "Reply" with the error flag set.  So it is upto an actor to signal an error rather than a message "erroring" out.  While this is not inconceivable it makes booking a bit harder.  eg:
+
+if a generator sends a Message to actor A (say a DB) then there is no way for the world to make the Message "fail" (eg A was down).  Instead A would have to implement failure modelling too.  Technically this is not a weakness of the Send/Reply model but can a Single Message type help here?
+
+Another area is timeouts.  In the current way every sender has to send itself an interrupt to take care of timeouts.  But if this was part of the Message itself then the world can take care of this instead too.
+
+
+The other problem we have is that of traceability.  Currently each actor on the path of a request creates, sends, receives and assembles replies.
+
+However it is very hard to "trace" the route of a message from end to end.  We would have to collect sends and replies from "all" devices and stitch them together to form a call "tree".  However if we had the concept of a single "root" Message then it would make it very easy to start with any Message and look at all its children and the Message itself would contain all trace information.  Clearly this is not how the real world works but here our World has visibility into everything so why not just make the message all encompassing?
+
+

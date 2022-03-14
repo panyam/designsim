@@ -1,0 +1,41 @@
+$default_bg: aliceblue;
+
+$header_height: 70px;
+$footer_height: 30px;
+$footer_padding: 20px;
+
+#header_div {
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  right: 0px;
+  height: $header_height;
+  border: solid 0px green;
+  text-align: center;
+  vertical-align: middle;
+}
+
+#center_div {
+  padding-left: 20px;
+  padding-right: 20px;
+  position: absolute;
+  left: 0px;
+  right: 0px;
+  overflow: auto;
+  top: $header_height;
+  bottom: $footer_height + $footer_padding;
+  border: solid 0px blue;
+}
+
+#footer_div {
+  position: absolute;
+  bottom: 0px;
+  left: 0px;
+  right: 0px;
+  height: $footer_height;
+  border: solid 0px green;
+  padding-top: 20px;
+  padding-left: 20px;
+  padding-right: 20px;
+  vertical-align: middle;
+}

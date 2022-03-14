@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html>
+  <head> {{>commonHeaders}} 
+    <style>
+      .param_title {
+        text-decoration: underline;
+        font-weight: bold;
+      }
+    </style>
+  </head>
+  <body>
+    <div id = "header_div"><h1>ID Generator Service</h1></div>
+    <div id = "center_div">
+      <h2><a name = "Introduction"></a>Introduction</h2>
+      <p>
+      ID Generation is a common problem when storing data into a database. IDs can be generated in several ways.  Each way has its advantages and disadvantages.
+      </p>
+      <p>
+      <h2><a name = "Existing_Schemes"></a>Existing Schemes</h2>
+
+      <h3>UUID</h3>
+      <strong>Pros:</strong>
+      <ul>
+        <li>Easy to generate. Almost every framework/platform comes with a UUID implementation that can offer 128 bit unique keys.</li>
+        <li>Random</li>
+      </ul>
+
+      <strong>Cons:</strong>
+      <ul>
+        <li>Too large (or too fixed) in size.  UUIDs are 128 bits in length.   This all or nothing proposition places may add constrains on size and usability (especially when smaller IDs are needed).</li>
+        <li>When used in a distributed environment would require a central server (to coin UUIDs) which could become a bottleneck.</li>
+        <li>Random – Wont cut it if sequential IDs are required.</li>
+      </ul>
+
+      <h3>Using a Database Auto-increment sequence</h3>
+      <strong>Pros:</strong>
+      <ul>
+        <li>Linear and auto-incrementing.</li>
+        <li>Almost all databases have this feature and can be centralized.</li>
+      </ul>
+
+      <strong>Cons:</strong>
+      <ul>
+        <li>Central DB can become a bottleneck.</li>
+        <li>No randomness if this is necessary.</li>
+        <li>Cannot reserve string IDs if needed.</li>
+      </ul>
+
+      <h3>Distributed (Almost) sequential IDs (eg Twitter Snowflake)</h3>
+
+      <strong>Pros:</strong>
+      <ul>
+        <li>Scalable and distributed</li>
+        <li>“Almost” linear and monotonic.</li>
+      </ul>
+
+      <strong>Cons:</strong>
+      <ul>
+        <li>Not random enough.</li>
+        <li>Cannot “reserve” IDs.</li>
+        <li>Only numeric – cannot choose custom string IDs.</li>
+      </ul>
+
+
+      <h2><a name = "Requirements"></a>Proposed System and Requirements</h2>
+
+      The proposed ID generation service is a variation of the UUID generation.  Here it is distributed (while avoiding duplicates) and allows variable ID sizes to suit different use cases.  Some uses are in systems like <a href = "/demos/tinyurl/">TinyURL</a> and <a href = "/demos/pastebin/">PasteBin</a>.
+
+      <h3><a name = "Functional_Requirements"></a>Functional Requirements</h3>
+      <ul>
+        <li>Get a random <var>K</var> bit ID.  Why "bits" and not characters?  This is because the bits themselves can be encoded depending on the alphabets chosen by the application (eg base64, base32 etc).  Decoupled responsibilities makes our system cleaner.</li>
+        <li>*Reserve* a <var>K</var> bit ID if it is not already generated.</li>
+        <li>Delete/Release a previously generated ID.</li>
+        <li>Associate a payload (of "reasonable size") with the ID for reverse tracking (this is beginning to look like a key value store).</li>
+      </ul>
+      <h3>Extended Requirements</h3>
+      <ul>
+        <li>Expiration of IDs after a certain amount of time.</li>
+        <li>Bulk Creations/Reservations</li>
+      </ul>
+      <h3>Operational Requirements (SLOs)</h3>
+      <ul>
+        <li>URL Creations within <Var>WRITE_LATENCY_P95</Var> in 95th percentile</li>
+        <li>Scalable, Highly Available</li>
+        <li>Monitoring and Alerts available</li>
+        <li>Geographically Distributed</li>
+        <li>Expandable (in ID space)</li>
+      </ul>
+
+      <h2><a name = "Modelling"></a>Step 2 - Modelling</h2>
+
+      <h3>Entities</h3>
+      <pre><code class="language-protobuf">
+
+        alias ID = bytes[32]
+
+        // Size: approx upto 2kb bytes
+        record IDEntry {
+          // Approx 32 bytes - can store
+          id: ID
+
+          // "entity" that created this ID
+          creator: string
+
+          // Creation time stamp of the TinyURL
+          // Will be set by service
+          createdAt: Timestamp
+
+          // Avg: 1kb for payload
+          payload: bytes[1024]
+        }
+      </code></pre>
+
+      <h3>Services</h3>
+
+      Our TinyURL service exposes the following operations:
+
+      <pre><code class="language-protobuf">
+        IDService {
+          /**
+           * Create/Reserve an ID entry.
+           */
+          Create(creator: string, payload: bytes[1024], id: Optional<ID>) -> IDEntry;
+
+          /**
+           * Releases an ID back into the pool (if it exists).
+           */
+          Release(id: ID) -> void
+        }
+      </code></pre>
+      </p>
+
+      <h2>Step 3 - Estimates and Parameters</h2><a name = "Estimates"></a>
+
+      A common step in designing systems is usage and capacity estimations.   We will take a slightly different approach here.  Our ID Generator will used as a plugin component in other systems (TinyURL, Pastebin etc).  The host systems will have their own requirements on scale.  So instead of developing a system with fixed capacity targets, our system will be parametrized such that the host can apply various tradeoffs as desired.
+
+      <p>
+      Some of our parameters are:
+
+      <table border = 1>
+        <thead>
+          <td>Input Parameters</td>
+          <td>Output Parameters</td>
+        </thead>
+        <tr>
+          <td style="vertical-align: top">
+            <ul>
+              <li>Creation QPS, <Var>C</var></li>
+              <li>Payload sizes, <var>P</var></li>
+              <li>Disk access times, <var>D</var></li>
+            </ul>
+          </td>
+          <td style="vertical-align: top">
+            <ul>
+              <li>P95 Latencies, <var>L<sub>p95</sub></var></li>
+              <li>Storage, <var>S</var></li>
+              <li>Cost (Monthly, Annual)</li>
+              <li>Availability</li>
+            </ul>
+          </td>
+        </tr>
+      </table>
+
+      <p>
+      Given our system parameters above, we can identify the relationship between them:
+
+      <h3>Storage Estimates</h3><a name = "Storage_Estimates"></a>
+      <p><span class = "param_title">Number of IDs created Daily:</span><br/>
+        = C * 100,000 = 10<sup>5</sup>  (roughly 100k seconds per day)<br/>
+      </p>
+      <p><span class = "param_title">Number of IDs created Annually:</span><br/>
+        = C * 100,000 * 400 = 4 * 10<sup>7</sup> (roughly 400 days a year)<br/>
+      </p>
+      <p><span class = "param_title">Annual Storage:</span><br/>
+        = sizeof(IDEntry) * Number of IDs created Annually<br/>
+        = C * 2KB * 4 * 10<sup>7</sup><br/>
+        = C * 8 * 10<sup>10</sup> bytes<br/>
+        = C * 80 GBytes per year
+      </p>
+
+
+      <h3>Volume Estimates</h3><a name = "Volume_Estimates"></a>
+
+      -----
+
+      <h4><strong><span style="">Number of URLs created</span></strong></h4>
+      <p class="has-medium-font-size">= 2000 QPS * 86400 seconds per day = 170M<br>= 62B per Year</p>
+
+      <h4><strong><span style="text-decoration: underline;">Total URLs Created Per Year</span></strong></h4>
+      <p class="has-medium-font-size">= approx 70B</p>
+
+      <p class="has-medium-font-size">With the 80/20 rule, 80% of URLs can be expired in 2 years, with the remaining 20% needing a 10 year tenure.  This brings the storage requirement to:<br>= 56 * 2 Year + 14 * 10 Years<br>= <strong>250B URLs over 10 years</strong><br><br><strong>FunFact</strong>: Number of pages currently indexed by Google: <a href="https://www.worldwidewebsize.com/">65B</a></p>
+
+      <p class="has-medium-font-size"><strong>Number Digits Required, K<br></strong>= log(250B, 62)<br>= 7</p>
+
+      <h3>Storage Estimates</h3><a name = "Storage_Estimates"></a>
+      <p class="has-medium-font-size">For TinyURLs (normal or custom) over 10 years<br>= (250B) * sizeof(TinyURL)<br>= approx 75Tb</p>
+
+      <h3>Bandwidth</h3>
+      <h4>Inbound Bandwidth (Creation)</h4>
+      <p>2000QPS * 300 Bytes per record = 600KBps</p>
+      <h4>Outbound Bandwidth (Retrieval)</h4>
+      <p>200KQPS * 300 Bytes per record = 60MBps</p>
+
+      <h2>Step 4 - High Level Design</h2>
+      <a name = "High_Level_Design"></a>
+
+      Our requirements are pretty simple.  We can quickly bring up a MVP by using flask/express/rails webapp backed by a SQL DB.
+
+      <h3>Database Design</h3>
+
+      Not counting the User table we need only one table (and one related indexes) in our DB:
+
+      <ol>
+        <li>TinyURL Table: This table holds each TinyURL keyed on the ID.
+          <pre><code class="language-sql">
+            CREATE TABLE tiny_urls (
+              id          varchar(32)     PRIMARY KEY,
+              long_url    varchar(1024)   NOT NULL,
+              created_at  DateTime        NOT NULL,
+              UNIQUE (long_url);          // ====> Creates a unique index automatically.
+            )
+          </code></pre>
+        </li>
+      </ol>
+
+      <p>
+      <h3>Basic API Implementation</h3>
+      <strong>Create</strong>: On a create, both the TinyURL table and the related indexes are updated (for unique constraint and for primary key - incurring three disk writes per creation).</li>
+          <pre><code class="language-sql">
+            def Create(request: CreateRequest) -> TinyURL:
+              # Step 1 - See if long URL is already regsitered
+              tinyUrl := findByLongURL(request.longURL)
+
+              # Step 2 - If tinyUrl exists return it
+              if tinyUrl exists:
+                  return tinyUrl
+
+              # Step 3 - Create it other wise - generate ID first (see next)
+              tinyUrl = TinyURL(id = create_next_id(),
+                  longURL = request.longURL,
+                  createdAt = now(),
+              )
+
+              # Step 4 - Write the TinyURL entry into the DB with the generated ID
+              # Assume a DB instance and some kind of ORM interface to our table exists
+              insert_into_db(tinyUrl)
+
+              if insertion successful:
+                  return tinyUrl
+
+              // Step 5 - A failure could mean duplicate ID or duplicate URL so go back to Step 1
+              go back to Step 1
+          </code></pre>
+      <li>Resolve: On a resolution, the TinyURL table is looked up by key (by querying the index corresponding to the pkey).</li>
+          <pre><code class="language-sql">
+            def Resolve(tinyURLId: string) -> TinyURL:
+              # Assume an ORM interface to our table exists
+              return getById(tinyURLId)
+          </code></pre>
+      </p>
+
+      <h3>Minimum Viable Product (MVP)</h3>
+      <div class = "system_description">
+      As a very basic MVP we have the following system.
+      <strong>Go ahead and try to see how our system performs as we increase the load on it.</strong>
+
+      <div>{{> include "demos/idgen/exercises/v1/main.hbs" }}</div>
+
+      <strong>TODO - Can we show how the different components are doing so we can show (a) what the system is doing 
+        as it is running (instead of just graphs over a static image) and (b) which systems are dying "first" to indicate botlenecks.  This would be useful in proposing next steps in scaling (db or web etc).</strong>
+
+      </div>
+      <h2>Step 5 - Scaling and Tradeoffs</h2><a name = "Scaling_And_TradeOffs"></a>
+
+      Our basic system is not very scalable.   Timeouts start at around the 350 QPS mark (far from the needed 2K read QPS needed). Which components struggle to keep up?  The metrics shed light here.   Outbound latencies (reads and writes) for the Client flatten out at the timeout values (2s and 5s respectively for reads and writes).  As requests begin to queue up (beyond what the DB is able to handle), the DB's get and put latencies keep rising (around 350/s due to 1ms disk access latencies and a write taking about 2-3 IOPS (TODO - Explain index costs)).  A single DB node is insufficient.
+
+
+      <p>
+      We need multiple DB nodes so that load can be distributed across this fleet.  There is one issue however.   Until this point all data was stored in a single node.   This ensured we could perform transactional writes across both the TinyURL table and the associated indexes.  Once distributed, transactions are <a href="need a link here">harder</a>.
+
+      <div>{{> include "demos/idgen/exercises/v2/main.hbs" }}</div>
+
+      But right now all this is possible.  Why cant we just show the latency graph of the DB now?
+
+      Storage
+
+      IO
+
+      Our web server even sporting the best SSDs can bring down disk access latencies to 1ms (resulting in 1000 IOPS).  With a creation taking typically 3 writes (about 3ms) and a resolution taking typically 2 reads our max QPS comes to around 350QPS (
+    </div>
+    <div id = "footer_div">
+      <a style="float: left" href = "/demos/">Previous</a>
+      <a style="float: right" href = "/demos/">Next</a>
+    </div>
+
+    {{>commonFooters}}
+  </body>
+</html>

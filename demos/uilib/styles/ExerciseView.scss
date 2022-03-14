@@ -1,0 +1,54 @@
+
+.exerciseContainerDiv {
+  display: table;
+  width: 100%;
+
+  position: relative;
+  // border: solid 2px blue;
+  margin-top: 20px;
+  margin-bottom: 20px;
+  overflow: hidden;
+}
+
+.exerciseRowDiv {
+  display: table;
+  width: 100%;
+}
+
+.systemDesignDiv {
+  display: table-cell;
+  border: solid 2px gray;
+}
+
+.systemContainerDiv {
+  text-align: center;
+  display: table-cell;
+}
+
+.exerciseButtonPanel {
+  display: table-cell;
+  text-align: center;
+  padding-top: 10px;
+  padding-bottom: 10px;
+}
+
+.systemRootSVG {
+  width: 100%;
+  min-height: 500px;
+  max-height: 600px;
+  overflow: scroll;
+}
+
+.propertiesDiv {
+  display: table-cell;
+  position: relative;
+  border-right: solid 2px gray;
+  width: 200px;
+}
+
+.metricsListDiv {
+  display: table-cell;
+  position: relative;
+  border-left: solid 2px gray;
+  width: 400px;
+}

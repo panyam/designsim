@@ -1,0 +1,21 @@
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"
+          integrity="sha256-T0Vest3yCU7pafRw9r+settMBX6JkKN06dqBnpQ8d30="
+          crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/3.6.3/fabric.js"/></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/handlebars.js/4.7.6/handlebars.js"></script>
+  <script>
+    $(document).ready(function () {
+      var isChrome = /Chrome/.test(navigator.userAgent) && /Google Inc/.test(navigator.vendor);
+      if (window.location.hash && isChrome) {
+        setTimeout(function () {
+          var hash = window.location.hash;
+          window.location.hash = "";
+          window.location.hash = hash;
+        }, 300);
+      }
+    });
+  </script>
+  <!--<script src="https://unpkg.com/typescript@latest/lib/typescriptServices.js"></script>-->
+  <!--<script src="https://d3js.org/d3.v5.min.js"></script>-->
+
